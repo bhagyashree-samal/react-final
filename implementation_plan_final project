@@ -1,0 +1,48 @@
+# Goal Description
+
+Create a robust React application that implements the provided API integrations (Authentication, User Management, and Camunda Reports) while matching the layout aesthetics of the provided user interface screenshot (NSDL top bar and sidebar navigation). The application will include routing, strict authentication checks, payload encryption as per documentation, and the complete flow for requesting and monitoring Camunda reports.
+
+## Proposed Changes
+
+### 1. Project Initialization & Setup
+- Initialize a new Vite React project in the `FinalProject` directory.
+- Use `react-router-dom` for robust navigation logic.
+- Install `crypto-js` to handle AES encryption for secure request/response payloads.
+- Install `axios` for network requests and interceptors.
+- Install `lucide-react` for sidebar and UI icons.
+
+### 2. Core Abstractions & Utilities
+- **`src/utils/crypto.js`**: Functions to handle the AES encryption wrapper `{ "RequestData": "..." }` using the provided `secretKey` (`a6T8...`) to seamlessly encrypt requests and decrypt responses.
+- **`src/services/api.js`**: An Axios-based API client pre-configured with Base URLs for Staging. It will include interceptors to automatically attach the `<token>` and handle `pass_key` and encryption mapping.
+
+### 3. State Management & Context
+- **`src/contexts/AuthContext.jsx`**: Global state to hold user sessions, handle the login phase, and protect authenticated routes, making sure unauthorized users are sent to the login page.
+
+### 4. Layout Components
+- **`src/components/layout/Header.jsx`**: The top navigation bar styled according to the image (dark red bg, NSDL branding placeholder on the left, "Wallet Adjustment" title, user avatar dropdown).
+- **`src/components/layout/Sidebar.jsx`**: The vertical menu containing the routes (Dashboard, User Management, Audit Trail, Wallet Adjustment).
+- **`src/components/layout/MainLayout.jsx`**: Wrapper containing the Header, Sidebar, and the Router outlet for main pages.
+- **`src/components/common/ProtectedRoute.jsx`**: React Router wrapper for standardizing access control.
+
+### 5. Application Pages
+- **`src/pages/Login.jsx`**: A streamlined login screen using the Authentication API. Passes form data through the crypto utilities and retrieves the baseline login token.
+- **`src/pages/WalletAdjustment.jsx` (Or Reports Main View)**: Based on the screenshot's "Wallet Adjustment" page header, this will contain the form elements. Since the APIs provided indicate generating variable Camunda reports (e.g., Dates, Report Type, User Name), this form will handle the "Fetch Feature", format the payload, and "Start Process Instance".
+- **`src/pages/ReportStatusList.jsx`**: Component to poll/search the "Search Report Processes" API, map the results, and offer a "Download" button for processes whose state is `Finished` using the corresponding download APIs.
+
+## Open Questions
+
+Before proceeding, I would like to clarify a few things to ensure you get exactly what you need:
+
+> [!IMPORTANT]
+> 1. **Encryption Mechanism**: The documentation specifies encrypting JSON with the `secretKey`. What specific AES mode and padding are you using on the backend? (e.g., `CryptoJS.AES.encrypt` with ECB mode and Pkcs7 padding is typical, but please confirm if you know). If you don't know, I'll set up standard AES encryption that you can tweak later.
+> 2. **Form Layout**: The provided image for the "Wallet Adjustment" route only shows a "User Name" input. However, the Camunda Report APIs for starting a report require a "Start Date", "End Date", and "Report Name" (like Wallet, DMT, etc.). Should I build the precise form matched to the API (date pickers and dropdown), or adhere strictly to the one-input visual from the image limit it to search functionality only?
+> 3. **Image Assets**: Are there specific logo image URLs or files I should use for the top left, or should I create a styling placeholder that closely approximates it?
+
+## Verification Plan
+
+### Automated/Manual Testing
+- Run `npm run dev` and navigate through the app.
+- Attempt navigating to unauthorized routes and confirm redirection to login.
+- Successfully log in with the Staging credentials (e.g., `ops_maker` / `TestIserveu@2026`).
+- Test the "Start Process Instance" call and review via the React Developer Tools to ensure the `RequestData` is being securely encrypted in transit.
+- List the Camunda processes using the search APIs and visually map the output to a table.
